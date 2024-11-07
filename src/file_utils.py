@@ -1,7 +1,7 @@
 
 import json
 import uuid
-from src.chess_board import ChessBoard
+from src.chess_backend.chess_board import ChessBoard
 
 def save_as_json(board: ChessBoard, dir: str):
     game_id = str(uuid.uuid4())

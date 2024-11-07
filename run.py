@@ -1,6 +1,6 @@
 import logging
 from src.log import setup_log
-from src.gameloop import run_game
+from src.game.gameloop import run_game
 def main():
     
     
@@ -9,4 +9,4 @@ def main():
     run_game(bot = True)
     
 if __name__ == "__main__":
-    main()
+    main() 
