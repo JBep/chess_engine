@@ -94,25 +94,22 @@ def legal_moves_bishop(grid:List[List[int]], color: int, start_square: Tuple[int
         cur_col = start_col + col_increment
         cur_selection = grid[cur_row][cur_col]
         while cur_selection != 99:
-            if cur_selection*color <= 0:
-                if cur_selection *color < 0:
-                    legal_moves.add(Move(
-                        start_square = start_square,
-                        end_square = (cur_row, cur_col),
-                        piece = 3*color,
-                        move_type = MoveTypeEnum.CAPTURE,
-                        captured_piece= cur_selection
-                    ))
-                else:
-                    legal_moves.add(Move(
-                        start_square = start_square,
-                        end_square = (cur_row, cur_col),
-                        piece = 3*color,
-                        move_type = MoveTypeEnum.NORMAL
-                    ))
-                
-                if cur_selection*color < 0:
-                    break
+            if cur_selection*color < 0:
+                legal_moves.add(Move(
+                    start_square = start_square,
+                    end_square = (cur_row, cur_col),
+                    piece = 3*color,
+                    move_type = MoveTypeEnum.CAPTURE,
+                    captured_piece= cur_selection
+                ))
+                break
+            elif cur_selection == 0:
+                legal_moves.add(Move(
+                    start_square = start_square,
+                    end_square = (cur_row, cur_col),
+                    piece = 3*color,
+                    move_type = MoveTypeEnum.NORMAL
+                ))
             else:
                 break  # Friendly piece
             cur_row = cur_row + row_increment
@@ -131,54 +128,50 @@ def legal_moves_rook(grid:List[List[int]], color: int, start_square: Tuple[int])
         cur_row = start_row + increment
         cur_selection = grid[cur_row][start_col]
         while cur_selection != 99:
-            if cur_selection*color <= 0:
-                if cur_selection *color < 0:
-                    legal_moves.add(Move(
-                        start_square = start_square,
-                        end_square = (cur_row, start_col),
-                        piece = 4*color,
-                        move_type = MoveTypeEnum.CAPTURE,
-                        captured_piece=cur_selection
+            if cur_selection*color < 0:
+                legal_moves.add(Move(
+                    start_square = start_square,
+                    end_square = (cur_row, start_col),
+                    piece = 4*color,
+                    move_type = MoveTypeEnum.CAPTURE,
+                    captured_piece=cur_selection
+                ))
+                break
+            elif cur_selection == 0:
+                legal_moves.add(Move(
+                    start_square = start_square,
+                    end_square = (cur_row, start_col),
+                    piece = 4*color,
+                    move_type = MoveTypeEnum.NORMAL
                     ))
-                else:
-                    legal_moves.add(Move(
-                        start_square = start_square,
-                        end_square = (cur_row, start_col),
-                        piece = 4*color,
-                        move_type = MoveTypeEnum.NORMAL
-                        ))
-                if cur_selection*color < 0:
-                    break
             else:
                 break # Friendly piece          
             cur_row = cur_row + increment
             cur_selection = grid[cur_row][start_col]
         
         # Horizontals
-        cur_col = start_col - increment
+        cur_col = start_col + increment
         cur_selection = grid[start_row][cur_col]
         while cur_selection != 99:
-            if cur_selection*color <= 0:
-                if cur_selection *color < 0:
-                    legal_moves.add(Move(
-                        start_square = start_square,
-                        end_square = (cur_row, start_col),
-                        piece = 4*color,
-                        move_type = MoveTypeEnum.CAPTURE,
-                        captured_piece=cur_selection
+            if cur_selection*color < 0:
+                legal_moves.add(Move(
+                    start_square = start_square,
+                    end_square = (start_row, cur_col),
+                    piece = 4*color,
+                    move_type = MoveTypeEnum.CAPTURE,
+                    captured_piece=cur_selection
+                ))
+                break
+            elif cur_selection == 0:
+                legal_moves.add(Move(
+                    start_square = start_square,
+                    end_square = (start_row, cur_col),
+                    piece = 4*color,
+                    move_type = MoveTypeEnum.NORMAL
                     ))
-                else:
-                    legal_moves.add(Move(
-                        start_square = start_square,
-                        end_square = (cur_row, start_col),
-                        piece = 4*color,
-                        move_type = MoveTypeEnum.NORMAL
-                        ))
-                if cur_selection*color < 0:
-                    break
             else:
                 break # Friendly piece    
-            cur_col = cur_col - increment
+            cur_col = cur_col + increment
             cur_selection = grid[start_row][cur_col]
        
     return legal_moves
@@ -206,10 +199,10 @@ def legal_moves_king(grid: List[List[int]], color: int, start_square: Tuple[int]
         row, col = square
         selection = grid[row][col]
         if selection != 99 and selection*color <= 0:
-            if selection *color < 0:
+            if selection * color < 0:
                 legal_moves.add(Move(
                     start_square = start_square,
-                    end_square =square,
+                    end_square = square,
                     piece = 6*color,
                     move_type = MoveTypeEnum.CAPTURE,
                     captured_piece=selection
@@ -217,7 +210,7 @@ def legal_moves_king(grid: List[List[int]], color: int, start_square: Tuple[int]
             else:
                 legal_moves.add(Move(
                     start_square = start_square,
-                    end_square =square,
+                    end_square = square,
                     piece = 6*color,
                     move_type = MoveTypeEnum.NORMAL
                     ))

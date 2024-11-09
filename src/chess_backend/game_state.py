@@ -17,12 +17,12 @@ class GameState:
     def copy(self) -> "GameState":
         gs = GameState(
             turn = self.turn,
-            game_is_over= self.game_is_over,
+            game_is_over = self.game_is_over,
             winner = self.winner,
-            king_in_check= self.king_in_check[:],
-            enpassant_end_square= self.enpassant_end_square[:],
-            kingside_castling_possible= self.kingside_castling_possible[:],
-            queenside_castling_possible= self.queenside_castling_possible[:]
+            king_in_check = self.king_in_check[:],
+            enpassant_end_square = self.enpassant_end_square[:],
+            kingside_castling_possible = self.kingside_castling_possible[:],
+            queenside_castling_possible = self.queenside_castling_possible[:]
         )
         return gs
     
@@ -36,7 +36,7 @@ class GameState:
         data = {
             "turn" : self.turn,
             "game_is_over" : self.game_is_over,
-            "winner " : self.winner,
+            "winner" : self.winner,
             "king_in_check" : self.king_in_check,
             "enpassant_end_square" : self.enpassant_end_square,
             "kingside_castling_possible" : self.kingside_castling_possible,

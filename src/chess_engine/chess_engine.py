@@ -1,3 +1,4 @@
+from copy import deepcopy
 import logging
 import time
 from typing import Callable
@@ -49,6 +50,8 @@ def minimax_evaluation(board: ChessBoard, evaluation_function:Callable, depth:in
         best_score = 10e12
         
     for i, move in enumerate(available_moves):
+        if available_moves != board.legal_moves:
+            print(available_moves == board.legal_moves, move, i, len(available_moves), depth)
         start = time.time()
         end = time.time()
         logging.log(logging.DEBUG, f"Copying board took {end-start} seconds.")
@@ -57,6 +60,7 @@ def minimax_evaluation(board: ChessBoard, evaluation_function:Callable, depth:in
             draw_board(screen, board, background_image, False, False, None)
             draw_pieces(screen, board, piece_images, None)
             pygame.display.flip()
+            pygame.time.delay(50)
         
         # Recursively evaluate opponent's best response
         score, _ = minimax_evaluation(
@@ -72,6 +76,8 @@ def minimax_evaluation(board: ChessBoard, evaluation_function:Callable, depth:in
             positions = positions, 
             node_id= node_id + (i,),
             background_image=background_image)
+        
+        board.undo_move() # Got undo move before potentially breaking the loop
         
         if maximizing_player:
             if score > best_score:
@@ -90,16 +96,6 @@ def minimax_evaluation(board: ChessBoard, evaluation_function:Callable, depth:in
             if beta <= alpha:
                 break
         
-        board.undo_move()
         
     return best_score, best_move
     
-def flatten_moves(legal_moves):
-    moves = []
-    for key, move_set in legal_moves.items():
-        if move_set:
-            for move in move_set:
-                moves.append((key,move))
-    return moves
-
-

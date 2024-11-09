@@ -2,7 +2,7 @@
 
 
 import pygame, sys
-from src.file_utils import save_as_json
+from src.file_utils import read_from_json, save_as_json
 from src.chess_engine.chess_engine import play
 from src.chess_engine.evaluation_functions.evaluation_function import naive_evaluation_function, elaborate_evaluation_function
 from src.chess_engine.evaluation_functions import position_evaluation
@@ -90,7 +90,7 @@ def run_game(bot:bool, grid = None):
                         game_id = save_as_json(board, "saved_games")
                         
                     if keys[pygame.K_l]:
-                        board.read_from_json("saved_games", game_id)
+                        read_from_json("saved_games", game_id)
         
         draw_board(screen, board, background_image,True, True, selected_square)
         draw_notepad(screen, board, notepad_background_image, BOT_EVALUATION_FUNCTION)

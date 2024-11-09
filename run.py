@@ -6,7 +6,7 @@ def main():
     
     setup_log(logging.DEBUG)
 
-    run_game(bot = True)
+    run_game(bot = False)
     
 if __name__ == "__main__":
     main() 

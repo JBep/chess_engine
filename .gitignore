@@ -5,3 +5,6 @@ plot_position_trees.ipynb
 # Venv
 .venv
 launch.json
+
+# log file
+app.log

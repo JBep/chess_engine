@@ -116,6 +116,6 @@ def animate_moving_piece(screen, board: ChessBoard, background_image,piece_image
         pygame.display.flip()
 
         frame_count += 1
-        pygame.time.delay(1000 / 60)
+        pygame.time.delay(1000 // 60)
 
  

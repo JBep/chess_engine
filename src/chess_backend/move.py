@@ -81,7 +81,7 @@ class Move:
             start_square = data["start_square"],
             end_square = data["end_square"],
             piece = data["piece"],
-            move_type_enum = MoveTypeEnum(data["move_type"]),
+            move_type = MoveTypeEnum(data["move_type"]),
             captured_piece = data["captured_piece"],
             enpassant_capture_square = data["enpassant_capture_square"],
             pawn_promotion_piece = data["pawn_promotion_piece"],
@@ -98,7 +98,7 @@ class MoveRecord:
     def to_json(self):
         data = {
             "move": self.move.to_json(),
-            "game_state": self.game_state
+            "game_state": self.game_state.to_json()
         }
         return data
     

@@ -1,6 +1,7 @@
 
 
 import logging
+from shutil import move
 from typing import List
 
 from src.log import log_execution_time
@@ -75,26 +76,30 @@ class ChessBoard:
         piece_type = abs(piece)
         if piece_type == 1:
             enpassant_end_square = self.game_state.enpassant_end_square[color]
-            legal_moves =  legal_moves_pawn(self.grid, color, start_square, enpassant_end_square)
+            moves =  legal_moves_pawn(self.grid, color, start_square, enpassant_end_square)
             
         elif piece_type == 2:
-            legal_moves = legal_moves_knight(self.grid, color, start_square)
+            moves = legal_moves_knight(self.grid, color, start_square)
             
         elif piece_type == 3:
-            legal_moves = legal_moves_bishop(self.grid, color, start_square)
+            moves = legal_moves_bishop(self.grid, color, start_square)
             
         elif piece_type == 4:
-            legal_moves = legal_moves_rook(self.grid, color, start_square)
+            moves = legal_moves_rook(self.grid, color, start_square)
             
         elif piece_type == 5:
-            legal_moves = legal_moves_queen(self.grid, color, start_square)
+            moves = legal_moves_queen(self.grid, color, start_square)
             
         elif piece_type == 6:
-            legal_moves = legal_moves_king(self.grid, color, start_square, 
+            moves = legal_moves_king(self.grid, color, start_square, 
                                            self.game_state.kingside_castling_possible[color], 
                                            self.game_state.queenside_castling_possible[color])
-    
-        return legal_moves
+        for move in moves:
+            s_row, s_col, e_row, e_col = move.unpack()
+            if s_row not in ROW_RANGE or e_row not in ROW_RANGE or s_col not in COL_RANGE or e_col not in COL_RANGE:
+                print(f"This is wierd... {move.move_type}  {move}")
+                
+        return moves
         
     def undo_move(self, update_legal_moves: bool = True):
         if self.history:
@@ -102,6 +107,8 @@ class ChessBoard:
             
             # Return the piece
             start_row, start_col, end_row, end_col = move_record.move.unpack()
+            if end_row not in ROW_RANGE or end_col not in COL_RANGE:
+                print(f"This is also wierd, {move_record.move.move_type} {move_record.move}")
             self.grid[end_row][end_col] = 0
             self.grid[start_row][start_col] = move_record.move.piece
             
@@ -134,7 +141,9 @@ class ChessBoard:
             pass
         else:
             if not move in self.legal_moves:
-                raise ValueError(f"Not a valid move. {move}")
+                for rank in self.grid:
+                    logging.log(logging.DEBUG, msg = rank)
+                raise ValueError(f"Not a valid move. {move}: valid moves: {sorted([str(move) for move in self.legal_moves])}")
         
         # Move the piece
         start_row, start_col, end_row, end_col = move.unpack()
@@ -194,7 +203,7 @@ class ChessBoard:
     def _handle_castling(self, move: Move, undo: bool = False) -> None:
         rook_start_row, rook_start_col = move.rook_start_square
         rook_end_row, rook_end_col = move.rook_end_square
-        color = move.piece/abs(move.piece)
+        color = move.piece//abs(move.piece)
         
         if not undo:
             self.grid[rook_start_row][rook_start_col] = 0
@@ -232,7 +241,7 @@ class ChessBoard:
     def to_json(self):
         data = {
             'grid': self.grid,
-            'game_state': self.game_state,
+            'game_state': self.game_state.to_json(),
             'history' : [move_record.to_json() for move_record in self.history]
         }
         return data

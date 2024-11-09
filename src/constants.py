@@ -8,8 +8,8 @@ IMAGE_DIR = "images"
 
 # Bot constants
 BOT_COLOR = -1
-BOT_EVALUATION_DEPTH = 3
-VISUALIZE = True
+BOT_EVALUATION_DEPTH = 4
+VISUALIZE = False
 
 # Game text constants this
 GAME_TITLE = "Chess Game"
