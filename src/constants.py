@@ -14,7 +14,8 @@ VISUALIZE = False
 # Game text constants this
 GAME_TITLE = "Chess Game"
 
-WHITE = (251, 245, 222)       # Off-white, warm tone
+WHITE = (255,255,255)
+OFF_WHITE = (251, 245, 222)       # Off-white, warm tone
 BLUE = (0, 68, 116)            # Dark blue
 BLACK = (34, 32, 52)           # Dark gray-black, not too harsh
 GRAY = (128, 128, 128)         # Medium gray, neutral
@@ -27,7 +28,7 @@ CYAN = (0, 139, 139)           # Dark cyan, with some depth
 PINK = (255, 182, 193)         # Light pink, soft tone
 BROWN = (139, 69, 19)          # Dark brown, earthy tone
 
-WHITE_SQUARE_COLOR = WHITE
+WHITE_SQUARE_COLOR = OFF_WHITE
 BLACK_SQUARE_COLOR = BLACK
 DEBUG_AREA_COLOR = BROWN
 TEXT_COLOR = BLACK
@@ -38,7 +39,7 @@ HIGHLIGHT_CAPTURE = RED
 
 
 # Screen area constants
-TEXT_AREA_WIDTH = 500
+TEXT_AREA_WIDTH = 1200
 WIDTH, HEIGHT = 800, 800
 ROWS, COLS = 8, 8
 SQUARE_SIZE = WIDTH // COLS

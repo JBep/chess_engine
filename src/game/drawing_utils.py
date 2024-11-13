@@ -1,4 +1,5 @@
 import pygame
+from src.bitboard_utils import get_active_positions
 from src.constants import BOARD_START_IDX, SQUARE_SIZE, IMAGE_DIR, TEXT_AREA_WIDTH, HEIGHT, WIDTH
 
 
@@ -49,3 +50,9 @@ def screen_square_to_chess_square(square):
 def chess_square_to_screen_square(square):
     row, col = square
     return row-BOARD_START_IDX, col - BOARD_START_IDX
+
+def bitboard_to_screen_squares(bitboard:int):
+    active_positions = get_active_positions(bitboard)
+    squares = [(7-pos//8,pos%8) for pos in active_positions]
+    
+    return squares

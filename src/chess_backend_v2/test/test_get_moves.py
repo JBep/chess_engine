@@ -1,11 +1,8 @@
 
 
-from math import exp
-from src.chess_backend.move import MoveTypeEnum
 from src.chess_backend_v2.bitboard_constants import BLACK_BITBOARD_STARTING_POSITION, WHITE_BITBOARD_STARTING_POSITION
-from src.chess_backend_v2.bitboard_utils import activate_position, activate_positions, deactivate_position, deactivate_positions, get_active_positions
-from src.chess_backend_v2.get_moves import get_bishop_psuedo_legal_moves, get_king_psuedo_legal_moves, get_knight_psuedo_legal_moves, get_pawn_psuedo_legal_moves, get_rook_psuedo_legal_moves
-from src.chess_backend_v2.move import Move
+from src.bitboard_utils import activate_position, activate_positions, deactivate_position, deactivate_positions, get_active_positions
+from chess_backend_v2.psuedo_legal_moves import get_bishop_psuedo_legal_moves, get_king_psuedo_legal_moves, get_knight_psuedo_legal_moves, get_pawn_psuedo_legal_moves, get_rook_psuedo_legal_moves
 from src.chess_backend_v2.piece import ColorEnum
 def test_result_string(test: str, moves_bitboard:int, expected_bitboard:int) -> str:
     return f"""{test} failed:
