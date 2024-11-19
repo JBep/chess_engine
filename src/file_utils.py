@@ -3,21 +3,13 @@ import json
 import uuid
 from src.chess_backend.chess_board import ChessBoard
 
-def save_as_json(board: ChessBoard, dir: str):
-    game_id = str(uuid.uuid4())
+def write_json(data, filename:str, dir:str):
+    path = f"{dir}/{filename}"
+    with open(path,'w') as file:
+        json.dump(data, file)
     
-    path = f"{dir}/{game_id}"
-    with open(path,'w') as f:
-        json.dump(board.to_json(), f)
-        
-    return game_id
-
-def read_from_json(dir: str, game_id: str) -> ChessBoard:
-    path = f"{dir}/{game_id}"
-    with open(path, 'r') as f:
-            data = json.load(f)
-        
-    board = ChessBoard.from_json(data)
-    return board
-        
-        
+def read_json(filename:str, dir:str):
+    path = f"{dir}/{filename}"
+    with open(path,'r') as file:
+        data = json.load(file)
+    return data    

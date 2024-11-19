@@ -2,6 +2,7 @@
 
 
 from functools import lru_cache
+from src.log import log_execution
 from src.chess_backend_v2.piece import ColorEnum
 from src.chess_backend_v2.bitboard_constants import ALL_ACTIVE_BITBOARD,FILE_A_BITBOARD, FILE_H_BITBOARD, FILE_B_BITBOARD, FILE_G_BITBOARD, RANK_1_BITBOARD, RANK_8_BITBOARD
 
@@ -9,6 +10,7 @@ from src.chess_backend_v2.bitboard_constants import ALL_ACTIVE_BITBOARD,FILE_A_B
     
 # TODO can I change this to only use relevant parts ot the board and thus make it cacheable?
 @lru_cache
+@log_execution
 def get_pawn_psuedo_legal_moves(start_bitboard:int, white_bitboard:int, black_bitboard: int,  color: ColorEnum, has_moved: bool, enpassant_bitboard: int) -> int:
     end_bitboard = 0
     if color == ColorEnum.WHITE:
@@ -41,6 +43,7 @@ def get_pawn_psuedo_legal_moves(start_bitboard:int, white_bitboard:int, black_bi
     return end_bitboard
 
 @lru_cache
+@log_execution
 def get_knight_psuedo_legal_moves(start_bitboard: int, own_color_bitboard:int ):
     end_bitboard = (
         (start_bitboard << 17) & ~(FILE_A_BITBOARD) |  # 2 up, 1 right (from white's perspective)
@@ -57,6 +60,7 @@ def get_knight_psuedo_legal_moves(start_bitboard: int, own_color_bitboard:int ):
     return end_bitboard
 
 @lru_cache
+@log_execution
 def slide_moves(start_bitboard: int, board_end_mask: int, own_color_bitboard: int, opposing_color_bitboard:int, shift: int):
     moves = 0
     pos = start_bitboard
@@ -74,6 +78,7 @@ def slide_moves(start_bitboard: int, board_end_mask: int, own_color_bitboard: in
     return moves
 
 @lru_cache
+@log_execution
 def get_bishop_psuedo_legal_moves(start_bitboard:int, own_color_bitboard:int, opposing_color_bitboard:int):
     directions = [
         (9, FILE_A_BITBOARD | RANK_1_BITBOARD),   # North-East (left-shift by 9 bits)
@@ -89,6 +94,7 @@ def get_bishop_psuedo_legal_moves(start_bitboard:int, own_color_bitboard:int, op
     return end_bitboard
 
 @lru_cache
+@log_execution
 def get_rook_psuedo_legal_moves(start_bitboard:int, own_color_bitboard:int, opposing_color_bitboard:int):
     directions = [
         (8,RANK_1_BITBOARD),   # North (left-shift by 8 bits)
@@ -104,11 +110,13 @@ def get_rook_psuedo_legal_moves(start_bitboard:int, own_color_bitboard:int, oppo
     return end_bitboard
 
 @lru_cache
+@log_execution
 def get_queen_psuedo_legal_moves(start_bitboard:int, own_color_bitboard:int, opposing_color_bitboard:int):
     end_bitboard = get_bishop_psuedo_legal_moves(start_bitboard, own_color_bitboard, opposing_color_bitboard) | get_rook_psuedo_legal_moves(start_bitboard, own_color_bitboard, opposing_color_bitboard)
     return end_bitboard
 
 @lru_cache
+@log_execution
 def get_king_psuedo_legal_moves(start_bitboard:int, own_color_bitboard:int, castling_bitboard:int) -> int:
     end_bitboard = (
         (start_bitboard << 1) & ~FILE_A_BITBOARD | # East

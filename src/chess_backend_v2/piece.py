@@ -20,6 +20,12 @@ class ColorEnum(Enum):
         else:
             return ColorEnum.WHITE
     
+    def to_json(self):
+        return self.value
+    
+    def from_json(value) -> "ColorEnum":
+        return ColorEnum(value)
+        
 
 class PieceTypeEnum(Enum):
     PAWN = 1
@@ -38,6 +44,12 @@ class PieceTypeEnum(Enum):
             s = s[0].upper() + s[1:]
             return s
         
+    def to_json(self):
+        return self.value
+    
+    def from_json(value) -> "PieceTypeEnum":
+        return PieceTypeEnum(value)
+        
 @dataclass(eq = True, unsafe_hash= True)
 class Piece:
     color: ColorEnum
@@ -45,7 +57,7 @@ class Piece:
     type: PieceTypeEnum
     
     legal_moves: Optional[int] = 0
-    move_counter: Optional[bool] = 0
+    move_counter: Optional[int] = 0
     psuedo_legal_moves: Optional[int] = 0
     
     @property
@@ -65,6 +77,31 @@ class Piece:
     @property
     def piece_type_id(self) -> str:
         return int(str(self.type.value)[0])
+    
+    def to_json(self):
+        data = {
+        "color": self.color.to_json(),
+        "location": self.location,
+        "type": self.piece_type.to_json(),
+        
+        "legal_moves": self.legal_moves,
+        "move_counter": self.move_counter,
+        "psuedo_legal_moves": self.psuedo_legal_moves
+        }
+        return data
+    
+    @staticmethod
+    def from_json(data) -> "Piece":
+        return Piece(
+            color = ColorEnum.from_json(data["color"]), 
+            location = data["location"],
+            piece_type = PieceTypeEnum.from_json(data["type"]), 
+
+            legal_moves = data["legal_moves"],
+            move_counter = data["move_counter"],
+            psuedo_legal_moves = data["psuedo_legal_moves"]
+        )
+                
     
 def initialize_pieces() -> dict[int,Piece]:
     white_pawns = []

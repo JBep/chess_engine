@@ -5,8 +5,8 @@ import pygame
 
 from src.bitboard_utils import activate_position, get_active_positions
 from src.game.drawing_utils import bitboard_to_screen_squares, chess_square_to_screen_square, square_to_position
-from src.board_protocol import BoardProtocol
-from src.constants import BLUE, HEIGHT, RED, TEXT_AREA_WIDTH, HIGHLIGHT, ROWS, COLS, SQUARE_SIZE, TEXT_COLOR, WHITE, WHITE_SQUARE_COLOR, BLACK_SQUARE_COLOR, DEBUG_AREA_COLOR, SQUARE_ALPHA, HIGHLIGHT_CAPTURE
+from src.board_protocol import BoardProtocol, PieceProtocol
+from src.constants import BLUE, HEIGHT, RED, SELECTED_SQUARE_COLOR, TEXT_AREA_WIDTH, HIGHLIGHT, ROWS, COLS, SQUARE_SIZE, TEXT_COLOR, WHITE, WHITE_SQUARE_COLOR, BLACK_SQUARE_COLOR, DEBUG_AREA_COLOR, SQUARE_ALPHA, HIGHLIGHT_CAPTURE
 from src.chess_backend.chess_utils import algebraic
 
 def squares_attacked(board: BoardProtocol, selected_square: Tuple[int]) -> list:
@@ -78,7 +78,7 @@ def draw_debug_screen(screen:pygame.Surface, board: BoardProtocol, evaluation_fu
         padding_y += 30
 
 # Draw the chess board
-def draw_notepad(screen, board: BoardProtocol, notes_background_image, evaluation_function):
+def draw_notepad(screen, board: BoardProtocol, notes_background_image, evaluation_object):
     text_area_x = COLS * SQUARE_SIZE
     text_area_y = 0
     screen.blit(notes_background_image, (text_area_x,text_area_y))
@@ -87,14 +87,14 @@ def draw_notepad(screen, board: BoardProtocol, notes_background_image, evaluatio
     padding_x = 100
     padding_y = 100
 
-    text_surface = font.render(f"Current evaluation: {evaluation_function(board)}", True, DEBUG_AREA_COLOR)
+    text_surface = font.render(f"Current evaluation: {evaluation_object.evaluate(board)}", True, DEBUG_AREA_COLOR)
     screen.blit(text_surface, (text_area_x + padding_x, text_area_y + padding_y))  # Add some padding
     padding_y += 45
     
-    for move_record in board.history:
-        text_surface = font.render(f"{algebraic(move_record)}", True, TEXT_COLOR)
-        screen.blit(text_surface, (text_area_x + padding_x, text_area_y + padding_y))  # Add some padding
-        padding_y += 45
+    # for move_record in board.history:
+    #     text_surface = font.render(f"{algebraic(move_record)}", True, TEXT_COLOR)
+    #     screen.blit(text_surface, (text_area_x + padding_x, text_area_y + padding_y))  # Add some padding
+    #     padding_y += 45
     
 def draw_board(screen, board: BoardProtocol, background_image: pygame.Surface, highlight_last_move: bool, highlight_attack: bool, visualize_color_bitboards:bool, selected_square):
     smallfont = pygame.font.SysFont('Arial', 14)  # Use default font and size 36
@@ -104,6 +104,8 @@ def draw_board(screen, board: BoardProtocol, background_image: pygame.Surface, h
     for row in range(ROWS):
         for col in range(COLS):
             color = colors[(row + col) % 2]
+            if (row, col) == selected_square:
+                color = tuple([sum(x)//2 for x in zip(color,SELECTED_SQUARE_COLOR)])
             
             if highlight_last_move and board.last_move:
                 start_square, end_square = board.last_move
@@ -138,22 +140,14 @@ def draw_board(screen, board: BoardProtocol, background_image: pygame.Surface, h
             screen.blit(txt, (col * SQUARE_SIZE, row * SQUARE_SIZE))
     
 # Draw pieces on the board
-def draw_pieces(screen, board:BoardProtocol, piece_images, selected_square):
+def draw_pieces(screen, board:BoardProtocol, piece_images, skipped_piece: PieceProtocol = None):
     for row in range(ROWS):
         for col in range(COLS):
             piece = board.get_piece(activate_position(0,(7-row)*8+col))  
-            if piece is not None and (row, col) != selected_square:
+            if piece is not None and piece != skipped_piece:
                 screen.blit(piece_images[piece.image_id], (col * SQUARE_SIZE, row * SQUARE_SIZE))
 
-def animate_holding_piece(screen, board:BoardProtocol, piece_images, selected_square):
-    x,y = pygame.mouse.get_pos()
-    row, col = selected_square
-    piece = board.get_piece(activate_position(0,(7-row)*8+col))  
-    if piece is not None:
-        piece_image = piece_images[piece.image_id]
-        screen.blit(piece_image, (x - piece_image.get_width() // 2, y - piece_image.get_height() // 2))
-            
-def animate_moving_piece(screen, board: BoardProtocol, background_image,piece_images, start_square, end_square):
+def animate_moving_piece(screen, board: BoardProtocol, background_image, piece:PieceProtocol, piece_images, start_square, end_square):
     start_index = get_active_positions(start_square)[0]
     start_row, start_col = 7-start_index//8, start_index%8
     start_y, start_x = start_row * SQUARE_SIZE+SQUARE_SIZE//2, start_col * SQUARE_SIZE+SQUARE_SIZE//2
@@ -166,17 +160,16 @@ def animate_moving_piece(screen, board: BoardProtocol, background_image,piece_im
     frames = duration * 60  # Assuming 60 frames per second
     frame_count = 0
  
-    piece_image_id = board.get_piece(start_square).image_id   
-    piece_image = piece_images[piece_image_id]
+    piece_image = piece_images[piece.image_id]
     
-    while frame_count < frames:
+    while frame_count <= frames:
         # Calculate the current position of the piece
         progress = frame_count / frames
         current_x = start_x + (end_x - start_x) * progress
         current_y = start_y + (end_y - start_y) * progress
         # Draw the board and the piece
         draw_board(screen, board, background_image, True, False, True,start_square)
-        draw_pieces(screen, board, piece_images, start_square)
+        draw_pieces(screen, board, piece_images,piece)
         screen.blit(piece_image, (current_x- piece_image.get_width() // 2, current_y- piece_image.get_height() // 2))
         pygame.display.flip()
 

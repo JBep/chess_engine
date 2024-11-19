@@ -5,7 +5,7 @@ from typing import Iterable, List, Set, Tuple
 
 from src.chess_backend_v2 import piece
 from src.chess_backend_v2.bitboard_constants import RANK_1_BITBOARD, RANK_8_BITBOARD, WHITE_SQUARES
-from src.log import log_execution_time
+from src.log import log_execution, log_execution_time
 from src.chess_backend_v2.checking_logic import king_is_in_check
 from src.chess_backend_v2.move_logic import compute_enpassant_position, compute_rook_move_if_castling, get_psuedo_legal_moves
 from src.chess_backend_v2.move import Move, MoveRecord, MoveTypeEnum
@@ -98,6 +98,7 @@ class ChessBoard_V2:
                 counter += 1
         return counter
     
+    @log_execution
     def set_promotion_piece(self,piece_type_id:int):
         if piece_type_id == 2:
             self.promotion_piece == PieceTypeEnum.KNIGHT
@@ -110,6 +111,7 @@ class ChessBoard_V2:
         else:
             raise ValueError(f"{piece_type_id} is not a valid piece type id. Valid id's are 2 (knight), 3 (bishop), 4 (rook), 5 (queen).")
     
+    @log_execution
     def get_legal_moves(self,arg):
         if isinstance(arg, int):
             return self._get_legal_moves_square(arg)
@@ -118,29 +120,34 @@ class ChessBoard_V2:
         else:
             raise TypeError(f"Argument should be int or Piece, not {type(arg)}.")
     
+    @log_execution
     def _get_legal_moves_square(self, square:int) -> int:
         for piece in self.pieces:
             if piece.location & square:
                 self.update_legal_moves(piece)
                 return piece.legal_moves
         
+    @log_execution
     def get_piece(self, square:int) -> Piece | None:
         for piece in self.pieces:
             if piece.location == square:
                 return piece
         return None
         
+    @log_execution
     def _get_legal_moves_piece(self,piece: Piece):
         if piece.legal_moves == 0:
             self.update_legal_moves(piece)
         return piece.legal_moves
     
+    @log_execution
     def king_is_in_check(self, color: ColorEnum) -> bool:
         if king_is_in_check(self.pieces, color):
             return True
         else:
             return False
      
+    @log_execution
     def play_turn(self, color: ColorEnum, start_square:int, end_square:int, piece: Piece) -> bool:
         # Check game is over
         if self.game_is_over == True:
@@ -160,30 +167,29 @@ class ChessBoard_V2:
         
         self.make_move(start_square, end_square, piece)
         
-        # # Checkmate & stalemate
-        # if self._is_checkmate(color.opposite_color()):
-        #     print("Checkmate")
-        #     self.game_is_over = True
-        #     self.winner = color
+        # Checkmate & stalemate
+        if self._is_checkmate(color.opposite_color()):
+            print("Checkmate")
+            self.game_is_over = True
+            self.winner = color
         
-        # elif self._is_stalemate(color.opposite_color()):
-        #     print("Stalemate")
-        #     self.game_is_over = True
+        elif self._is_stalemate(color.opposite_color()):
+            print("Stalemate")
+            self.game_is_over = True
         
-        # # Draw by 50
-        # elif self.fifty_move_draw_count >= 50:
-        #     self.game_is_over = True
+        # Draw by 50
+        elif self.fifty_move_draw_count >= 50:
+            self.game_is_over = True
         
-        # # Dead position
-        # elif self.dead_position:
-        #     self.game_is_over = True
-        
-        # TODO Three-fold repetition
+        # Dead position
+        elif self.dead_position:
+            self.game_is_over = True
         
         piece.legal_moves = 0
         self.turn = self.turn.opposite_color()
         return True
         
+    @log_execution
     def unplay_turn(self):
         if self.history:
             self.unmake_move()
@@ -191,6 +197,7 @@ class ChessBoard_V2:
             self.winner = None
             self.turn = self.turn.opposite_color()
             
+    @log_execution
     def make_move(self,start_square: int, end_square:int, piece :Piece) -> bool:
         move_record = MoveRecord(
             start_bitboard= start_square,
@@ -245,9 +252,8 @@ class ChessBoard_V2:
             move_record.rook_start_bitboard = rook_start_bitboard
             move_record.rook_end_bitboard = rook_end_bitboard
             
-            rook = self.pieces.pop(self._get_piece_index(rook_start_bitboard))        
+            rook = self.pieces[self._get_piece_index(rook_start_bitboard)]
             rook.location = rook_end_bitboard
-            self.pieces[rook_end_bitboard] = rook    
             rook.move_counter += 1
             
             own_color_bitboard ^= rook_start_bitboard
@@ -267,8 +273,8 @@ class ChessBoard_V2:
         
         # record the move
         self.history.append(move_record)
-        logging.log(logging.DEBUG, f"Last move: {move_record}")
-        
+    
+    @log_execution
     def unmake_move(self):
         # Get the move_record
         move_record = self.history.pop()
@@ -313,14 +319,17 @@ class ChessBoard_V2:
         
         self._update_color_bitboards(color = piece.color, own_color_bitboard=own_color_bitboard, opposing_color_bitboard=opposing_color_bitboard)
      
+    @log_execution
     def reset(self) -> None:
         self.__init__()
      
+    @log_execution
     def get_psuedo_legal_moves(self, piece: Piece):
         self.update_psuedo_legal_moves(piece)
         return piece.psuedo_legal_moves
      
-    @log_execution_time
+    #@log_execution_time
+    @log_execution
     def update_psuedo_legal_moves(self, piece: Piece) -> None:
         piece.psuedo_legal_moves = get_psuedo_legal_moves(
             piece=piece, 
@@ -330,6 +339,7 @@ class ChessBoard_V2:
             enpassant_bitboard=self.enpassant_end_square
             )
 
+    @log_execution
     def update_legal_moves(self, piece: Piece) -> None:
         self.update_psuedo_legal_moves(piece)
 
@@ -345,6 +355,7 @@ class ChessBoard_V2:
             
             psuedo_legal_bitboard &= psuedo_legal_bitboard-1  # Clear the least significant bit
     
+    @log_execution
     def  _get_color_bitboards(self, color: ColorEnum):
         if color == ColorEnum.WHITE:
             own_color_bitboard = self.white_occupied_squares
@@ -355,12 +366,14 @@ class ChessBoard_V2:
         
         return own_color_bitboard, opposing_color_bitboard
     
+    @log_execution
     def _get_piece_index(self,square:int) -> int:
         for i,p in enumerate(self.pieces):
             if p.location == square:
                 return i
         return None
     
+    @log_execution
     def _is_checkmate(self,color: ColorEnum):
         if not king_is_in_check(self.pieces,color):
             return False
@@ -371,6 +384,7 @@ class ChessBoard_V2:
                     return False
         return True
         
+    @log_execution
     def _is_stalemate(self,color: ColorEnum):
         if king_is_in_check(self.pieces,color):
             return False
@@ -381,6 +395,7 @@ class ChessBoard_V2:
                     return False
         return True
          
+    @log_execution
     def _update_color_bitboards(self, color: ColorEnum, own_color_bitboard:int, opposing_color_bitboard:int):
         if color == ColorEnum.WHITE:
             self.white_occupied_squares = own_color_bitboard
@@ -390,9 +405,25 @@ class ChessBoard_V2:
             self.black_occupied_squares = own_color_bitboard
         
     
-    # def to_json(self):
+    def to_json(self):
+        data = []
+        for move in self.history:
+            data.append(move.to_json())
         
+        return data
+        
+    def from_json(self, data) -> "ChessBoard_V2":
+        return self.from_json_static(data)
     
-    # @staticmethod
-    # def from_json(self):
-    #     pass
+    @staticmethod
+    def from_json_static(data) -> "ChessBoard_V2":
+        board = ChessBoard_V2()
+        for move in data:
+            mr = MoveRecord.from_json(move)
+            board.make_move(
+                start_square=mr.start_bitboard,
+                end_square=mr.end_bitboard,
+                piece=board.get_piece(mr.start_bitboard)
+            )
+        return board
+        

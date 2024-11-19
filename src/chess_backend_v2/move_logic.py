@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Iterable, List
+from src.log import log_execution
 from src.chess_backend_v2.psuedo_legal_moves import get_bishop_psuedo_legal_moves, get_king_psuedo_legal_moves, get_knight_psuedo_legal_moves, get_pawn_psuedo_legal_moves, get_queen_psuedo_legal_moves, get_rook_psuedo_legal_moves
 from src.chess_backend_v2.checking_logic import square_is_attacked, squares_are_attacked
 from src.chess_backend_v2.bitboard_constants import (
@@ -15,6 +16,7 @@ from src.chess_backend_v2.piece import ColorEnum, Piece, PieceTypeEnum
 
 
 @lru_cache
+@log_execution
 def compute_enpassant_position(start_bitboard: int, end_bitboard:int, piece_type:PieceTypeEnum, color:ColorEnum):
     enpassant_bitboard, enpassant_capture_bitboard = 0,0
     if piece_type == PieceTypeEnum.PAWN:
@@ -29,7 +31,7 @@ def compute_enpassant_position(start_bitboard: int, end_bitboard:int, piece_type
            
     return enpassant_bitboard, enpassant_capture_bitboard
 
-
+@log_execution
 def compute_castling_position(pieces: List[Piece], color: ColorEnum, kingside_castling_lane: int, queenside_castling_lane: int, kingside_castling_passed_square:int, queenside_castling_passed_square:int):
     king = None
     kingside_rook = None
@@ -57,27 +59,25 @@ def compute_castling_position(pieces: List[Piece], color: ColorEnum, kingside_ca
     return castling_bitboard
 
 @lru_cache
+@log_execution
 def compute_rook_move_if_castling(start_bitboard: int, end_bitboard: int, piece_type: PieceTypeEnum, color: ColorEnum):
     if piece_type != PieceTypeEnum.KING:
         return None
     
-    rook_start_bitboard = 0
-    if (start_bitboard & KING_STARTING_POSITIONS) != 0:
-        if (end_bitboard & KINGSIDE_CASTLING_KING_END_SQUARES) != 0:
+    if start_bitboard & KING_STARTING_POSITIONS:
+        if end_bitboard & KINGSIDE_CASTLING_KING_END_SQUARES:
             rook_start_bitboard = end_bitboard << 1
             rook_end_bitboard = end_bitboard >> 1
+            return rook_start_bitboard, rook_end_bitboard
                 
-        elif (end_bitboard & QUEENSIDE_CASTLING_KING_END_SQUARES) != 0:    
+        elif end_bitboard & QUEENSIDE_CASTLING_KING_END_SQUARES:    
             rook_start_bitboard = end_bitboard >> 2
             rook_end_bitboard = end_bitboard << 1
-
+            return rook_start_bitboard, rook_end_bitboard   
     
-    if rook_start_bitboard != 0:
-        return rook_start_bitboard, rook_end_bitboard
-    else:
-        return None
+    return None
 
-
+@log_execution
 def get_psuedo_legal_moves(piece: Piece, pieces: Iterable[Piece], white_bitboard: int, black_bitboard: int, enpassant_bitboard:int) -> int:
     if piece.color == ColorEnum.WHITE:
         own_color_bitboard = white_bitboard

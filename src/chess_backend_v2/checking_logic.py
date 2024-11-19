@@ -1,42 +1,50 @@
 from functools import lru_cache
 from typing import Iterable
+from src.log import log_execution
 from src.chess_backend_v2.psuedo_legal_moves import get_king_psuedo_legal_moves, get_knight_psuedo_legal_moves
 from src.chess_backend_v2.piece import ColorEnum, Piece, PieceTypeEnum
 from src.chess_backend_v2.bitboard_constants import ALL_ACTIVE_BITBOARD, FILE_A_BITBOARD, FILE_H_BITBOARD
 
+@log_execution
 def king_is_in_check(pieces: Iterable[Piece], color: ColorEnum):
-        square, opponent_pawns, opponent_knights, opponent_bishops, opponent_rooks, opponent_queens, opponent_king, all_pieces = 0,0,0,0,0,0,0,0
-        for piece in pieces:
-            all_pieces |= piece.location
-            if piece.color != color:
-                if piece.type == PieceTypeEnum.PAWN:
-                    opponent_pawns |= piece.location
-                elif piece.type == PieceTypeEnum.KNIGHT:
-                    opponent_knights |= piece.location
-                elif piece.type == PieceTypeEnum.BISHOP:
-                    opponent_bishops |= piece.location
-                elif piece.type in [PieceTypeEnum.KINGSIDE_ROOK, PieceTypeEnum.QUEENSIDE_ROOK]:
-                    opponent_rooks |= piece.location
-                elif piece.type == PieceTypeEnum.QUEEN:
-                    opponent_queens |= piece.location
-                elif piece.type == PieceTypeEnum.KING:
-                    opponent_king |= piece.location
-            else:
-                if piece.type == PieceTypeEnum.KING:
-                    square |= piece.location
-        
-        return _square_is_attacked(
-            square=square,
-            opponent_pawns=opponent_pawns,
-            opponent_knights=opponent_knights,
-            opponent_bishops=opponent_bishops,
-            opponent_rooks=opponent_rooks,
-            opponent_queens=opponent_queens,
-            opponent_king=opponent_king,
-            all_pieces=all_pieces,
-            color=color
-        )
-  
+    # Initialize bitboards for opponent pieces and target square for king
+    square, all_pieces = 0, 0
+    opponent_bitboards = {
+        PieceTypeEnum.PAWN: 0,
+        PieceTypeEnum.KNIGHT: 0,
+        PieceTypeEnum.BISHOP: 0,
+        PieceTypeEnum.KINGSIDE_ROOK: 0,  # Grouping both rook types
+        PieceTypeEnum.QUEENSIDE_ROOK: 0,
+        PieceTypeEnum.QUEEN: 0,
+        PieceTypeEnum.KING: 0
+    }
+
+    for piece in pieces:
+        all_pieces |= piece.location
+        if piece.color == color:
+            if piece.type == PieceTypeEnum.KING:
+                square = piece.location
+        else:
+            # Use a dictionary to aggregate opponent piece locations
+            if piece.type in opponent_bitboards:
+                opponent_bitboards[piece.type] |= piece.location
+
+    # Combine rooks for simpler checks
+    opponent_rooks = opponent_bitboards[PieceTypeEnum.KINGSIDE_ROOK] | opponent_bitboards[PieceTypeEnum.QUEENSIDE_ROOK]
+
+    return _square_is_attacked(
+        square=square,
+        opponent_pawns=opponent_bitboards[PieceTypeEnum.PAWN],
+        opponent_knights=opponent_bitboards[PieceTypeEnum.KNIGHT],
+        opponent_bishops=opponent_bitboards[PieceTypeEnum.BISHOP],
+        opponent_rooks=opponent_rooks,
+        opponent_queens=opponent_bitboards[PieceTypeEnum.QUEEN],
+        opponent_king=opponent_bitboards[PieceTypeEnum.KING],
+        all_pieces=all_pieces,
+        color=color
+    )
+
+@log_execution
 def squares_are_attacked(squares:int, pieces: Iterable[Piece], color: ColorEnum):
     while squares:
         lsb = squares & -squares  # Isolate the least significant bit (LSB)
@@ -47,6 +55,7 @@ def squares_are_attacked(squares:int, pieces: Iterable[Piece], color: ColorEnum)
         squares &= squares - 1  # Clear the least significant bit
     return False
 
+@log_execution
 def square_is_attacked(square: int, pieces: Iterable[Piece], color: ColorEnum): 
         opponent_pawns, opponent_knights, opponent_bishops, opponent_rooks, opponent_queens, opponent_king, all_pieces = 0,0,0,0,0,0,0
         for piece in pieces:
@@ -77,6 +86,7 @@ def square_is_attacked(square: int, pieces: Iterable[Piece], color: ColorEnum):
             color=color
         )
         
+@log_execution
 @lru_cache
 def _square_is_attacked(square:int, opponent_pawns:int, opponent_knights:int, opponent_bishops:int,
                      opponent_rooks:int, opponent_queens:int, opponent_king:int, all_pieces:int, 

@@ -90,6 +90,9 @@ class BoardProtocol(Protocol):
     def winner(self) -> ColorProtocol:
         pass
     
+    def from_json(data) -> "BoardProtocol":
+        pass    
+    
     def get_color(self,color: int) -> int:
         """Takes 1 (for white) or 0 (for black) as input, returns a bitboard
         where active bits depict piece location"""
@@ -124,6 +127,9 @@ class BoardProtocol(Protocol):
         
     def set_promotion_piece(self, piece_id:int):
         """Sets the promotion piece, expects 2 (knight), 3 (bishop), 4 (rook), 5 (queen)."""
+    
+    def to_json(self) -> dict:
+        pass
     
     def unplay_turn(self) -> None:
         "Unmakes the last turn played" 
