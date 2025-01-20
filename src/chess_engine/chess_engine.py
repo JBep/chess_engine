@@ -27,7 +27,9 @@ def play(board: BoardProtocol, evaluation_object, depth: int, color:int, visuali
 
 minimax_evaluation_counter = 0
 @log_execution
-def minimax_evaluation(board: BoardProtocol, evaluation_object:Callable, depth:int, color:int, alpha:float, beta:float, visualize, screen, piece_images, positions:dict, node_id, background_image):
+def minimax_evaluation(board: BoardProtocol, evaluation_object:Callable, depth:int, color:int, alpha:float, beta:float, 
+                       visualize, screen, piece_images, positions:dict, node_id, background_image):
+    
     global minimax_evaluation_counter
     if depth == 0 or board.game_is_over:
         minimax_evaluation_counter += 1
